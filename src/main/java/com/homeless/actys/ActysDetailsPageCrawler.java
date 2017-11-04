@@ -5,6 +5,8 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
+import java.io.IOException;
+import java.net.URI;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.time.Instant;
@@ -15,6 +17,20 @@ import java.util.Locale;
 public class ActysDetailsPageCrawler {
   public Rental getRentalDetails(String html) {
     Document document = Jsoup.parse(html);
+    return getRental(document);
+  }
+
+  public Rental getRentalDetails(URI uri) {
+    Document parsed = null;
+    try {
+      parsed = Jsoup.parse(uri.toURL(), 60000);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    return getRental(parsed);
+  }
+
+  private Rental getRental(Document document) {
     Rental ren = new Rental();
     ren.setUrl(document.select("link[rel=canonical]").attr("href"));
     ren.setPrice(getPrice(document));

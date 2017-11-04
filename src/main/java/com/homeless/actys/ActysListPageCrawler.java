@@ -33,7 +33,7 @@ public class ActysListPageCrawler {
         stop = urls.isEmpty();
         result.addAll(urls);
       } catch (IOException e) {
-        e.printStackTrace();
+        throw new RuntimeException(e);
       }
     }
     return result;

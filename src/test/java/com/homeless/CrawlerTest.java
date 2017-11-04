@@ -1,6 +1,6 @@
 package com.homeless;
 
-import org.junit.Assert;
+import com.homeless.actys.Crawler;
 import org.junit.Test;
 
 
