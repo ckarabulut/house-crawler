@@ -1,6 +1,7 @@
 package com.homeless;
 
 import com.homeless.config.Configuration;
+import com.homeless.rentals.RentalsDao;
 import com.mysql.cj.jdbc.MysqlDataSource;
 import org.skife.jdbi.v2.DBI;
 

@@ -23,6 +23,6 @@ public class ActysDetailsPageCrawlerTest {
     Assert.assertEquals(1400, rental.getPrice());
     Assert.assertEquals(5, rental.getRoomCount());
     Assert.assertEquals("Minckelersstraat 1 C 1223 LB Hilversum", rental.getAddress());
-    Assert.assertEquals(Instant.now().truncatedTo(ChronoUnit.DAYS), rental.getAvaiableDate());
+    Assert.assertEquals(Instant.now().truncatedTo(ChronoUnit.DAYS), rental.getAvailableDate());
   }
 }

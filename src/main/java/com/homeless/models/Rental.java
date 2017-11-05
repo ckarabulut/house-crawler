@@ -4,22 +4,22 @@ import java.time.Instant;
 
 public class Rental {
 
-  private String id;
+  private int id;
   private Status status;
   private int price;
   private String type;
   private int area;
   private int roomCount;
-  private Instant avaiableDate;
-  private Instant createdAt;
+  private Instant availableDate;
+  private Instant insertionDate;
   private String address;
   private String url;
 
-  public String getId() {
+  public int getId() {
     return id;
   }
 
-  public void setId(String id) {
+  public void setId(int id) {
     this.id = id;
   }
 
@@ -63,20 +63,20 @@ public class Rental {
     this.roomCount = roomCount;
   }
 
-  public Instant getAvaiableDate() {
-    return avaiableDate;
+  public Instant getAvailableDate() {
+    return availableDate;
   }
 
-  public void setAvaiableDate(Instant avaiableDate) {
-    this.avaiableDate = avaiableDate;
+  public void setAvailableDate(Instant availableDate) {
+    this.availableDate = availableDate;
   }
 
-  public Instant getCreatedAt() {
-    return createdAt;
+  public Instant getInsertionDate() {
+    return insertionDate;
   }
 
-  public void setCreatedAt(Instant createdAt) {
-    this.createdAt = createdAt;
+  public void setInsertionDate(Instant insertionDate) {
+    this.insertionDate = insertionDate;
   }
 
   public String getAddress() {
@@ -93,5 +93,67 @@ public class Rental {
 
   public void setUrl(String url) {
     this.url = url;
+  }
+
+  public static class Builder {
+    private Rental rental;
+
+    public Builder() {
+      rental = new Rental();
+    }
+
+    public Builder setId(int id) {
+      this.rental.id = id;
+      return this;
+    }
+
+    public Builder setStatus(Status status) {
+      this.rental.status = status;
+      return this;
+    }
+
+    public Builder setPrice(int price) {
+      this.rental.price = price;
+      return this;
+    }
+
+    public Builder setType(String type) {
+      this.rental.type = type;
+      return this;
+    }
+
+    public Builder setArea(int area) {
+      this.rental.area = area;
+      return this;
+    }
+
+    public Builder setRoomCount(int roomCount) {
+      this.rental.roomCount = roomCount;
+      return this;
+    }
+
+    public Builder setAvailableDate(Instant availableDate) {
+      this.rental.availableDate = availableDate;
+      return this;
+    }
+
+    public Builder setInsertionDate(Instant insertionDate) {
+      this.rental.insertionDate = insertionDate;
+      return this;
+    }
+
+    public Builder setAddress(String address) {
+      this.rental.address = address;
+      return this;
+    }
+
+    public Builder setUrl(String url) {
+      this.rental.url = url;
+      return this;
+    }
+
+    public Rental build() {
+      return rental;
+    }
   }
 }

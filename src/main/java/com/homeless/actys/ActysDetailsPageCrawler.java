@@ -31,24 +31,24 @@ public class ActysDetailsPageCrawler {
   }
 
   private Rental getRental(Document document) {
-    Rental ren = new Rental();
-    ren.setUrl(document.select("link[rel=canonical]").attr("href"));
-    ren.setPrice(getPrice(document));
+    Rental rental = new Rental();
+    rental.setUrl(document.select("link[rel=canonical]").attr("href"));
+    rental.setPrice(getPrice(document));
     Elements elements =
         document.select(".table-unbordered.hidden-xs").select("tr").get(1).select("td");
-    ren.setRoomCount(Integer.parseInt(elements.get(2).text().replace("kamers", "").trim()));
-    ren.setArea(Integer.parseInt(elements.get(3).text().replace("m2", "").trim()));
+    rental.setRoomCount(Integer.parseInt(elements.get(2).text().replace("kamers", "").trim()));
+    rental.setArea(Integer.parseInt(elements.get(3).text().replace("m2", "").trim()));
     if (elements.get(4).text().contains("per direct")) {
-      ren.setAvaiableDate(Instant.now().truncatedTo(ChronoUnit.DAYS));
+      rental.setAvailableDate(Instant.now().truncatedTo(ChronoUnit.DAYS));
     } else {
       DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-      ren.setAvaiableDate(Instant.from(dateTimeFormatter.parse(elements.get(4).text())));
+      rental.setAvailableDate(Instant.from(dateTimeFormatter.parse(elements.get(4).text())));
     }
-    ren.setAddress(
+    rental.setAddress(
         document.select("h1[itemprop=streetAddress]").text()
             + " "
             + document.select("p[itemprop=addressLocality]").text());
-    return ren;
+    return rental;
   }
 
   private int getPrice(Document document) {
