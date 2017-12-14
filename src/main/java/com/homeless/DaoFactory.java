@@ -3,7 +3,8 @@ package com.homeless;
 import com.homeless.config.Configuration;
 import com.homeless.rentals.RentalsDao;
 import com.mysql.cj.jdbc.MysqlDataSource;
-import org.skife.jdbi.v2.DBI;
+import org.jdbi.v3.core.Jdbi;
+import org.jdbi.v3.sqlobject.SqlObjectPlugin;
 
 public class DaoFactory {
 
@@ -14,8 +15,9 @@ public class DaoFactory {
     dataSource.setUser(configuration.getDbUser());
     dataSource.setPassword(configuration.getDbPassword());
     dataSource.setUrl(configuration.getDbUrl());
-    DBI dbi = new DBI(dataSource);
-    rentalsDao = dbi.open(RentalsDao.class);
+    Jdbi dbi = Jdbi.create(dataSource);
+    dbi.installPlugin(new SqlObjectPlugin());
+    rentalsDao = dbi.onDemand(RentalsDao.class);
     rentalsDao.createDatabase();
     rentalsDao.createRentalsTable();
   }

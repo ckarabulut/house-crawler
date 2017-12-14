@@ -2,24 +2,26 @@ package com.homeless.rentals;
 
 import com.homeless.models.Rental;
 import com.homeless.models.Status;
-import org.skife.jdbi.v2.StatementContext;
-import org.skife.jdbi.v2.tweak.ResultSetMapper;
+import org.jdbi.v3.core.mapper.RowMapper;
+import org.jdbi.v3.core.statement.StatementContext;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class RentalMapper implements ResultSetMapper<Rental> {
+public class RentalMapper implements RowMapper<Rental> {
+
   @Override
-  public Rental map(int i, ResultSet r, StatementContext statementContext) throws SQLException {
+  public Rental map(ResultSet r, StatementContext ctx) throws SQLException {
     Rental rental = new Rental();
     rental.setId(r.getInt("id"));
     rental.setStatus(Status.valueOf(r.getString("status")));
     rental.setPrice(r.getInt("price"));
     rental.setType(r.getString("type"));
     rental.setArea(r.getInt("area"));
-    rental.setRoomCount(r.getInt("room_count"));
+    rental.setRoomCount(r.getInt("roomCount"));
     rental.setAvailableDate(r.getDate("availableDate").toInstant());
     rental.setInsertionDate(r.getDate("insertionDate").toInstant());
+    rental.setLastUpdatedDate(r.getDate("lastUpdatedDate").toInstant());
     rental.setAddress(r.getString("address"));
     rental.setUrl(r.getString("url"));
     return rental;
