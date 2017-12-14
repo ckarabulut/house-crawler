@@ -19,9 +19,9 @@ public class RentalMapper implements RowMapper<Rental> {
     rental.setType(r.getString("type"));
     rental.setArea(r.getInt("area"));
     rental.setRoomCount(r.getInt("roomCount"));
-    rental.setAvailableDate(r.getDate("availableDate").toInstant());
-    rental.setInsertionDate(r.getDate("insertionDate").toInstant());
-    rental.setLastUpdatedDate(r.getDate("lastUpdatedDate").toInstant());
+    rental.setAvailableDate(r.getTimestamp("availableDate").toInstant());
+    rental.setInsertionDate(r.getTimestamp("insertionDate").toInstant());
+    rental.setLastUpdatedDate(r.getTimestamp("lastUpdatedDate").toInstant());
     rental.setAddress(r.getString("address"));
     rental.setUrl(r.getString("url"));
     return rental;

@@ -2,6 +2,7 @@ package com.homeless.actys;
 
 import com.homeless.models.Rental;
 import com.homeless.models.Status;
+import com.homeless.notification.EmailNotifier;
 import com.homeless.rentals.RentalsDao;
 
 import java.util.List;
@@ -14,15 +15,20 @@ public class ActysNewRentalFinder extends TimerTask {
 
   private final RentalsDao rentalsDao;
   private final ActysCrawler actysCrawler;
+  private final EmailNotifier emailNotifier;
 
-  public ActysNewRentalFinder(RentalsDao rentalsDao) {
-    this.rentalsDao = rentalsDao;
-    this.actysCrawler = new ActysCrawler();
-  }
-
-  public ActysNewRentalFinder(RentalsDao rentalsDao, ActysCrawler actysCrawler) {
+  public ActysNewRentalFinder(
+      RentalsDao rentalsDao, ActysCrawler actysCrawler, EmailNotifier emailNotifier) {
     this.rentalsDao = rentalsDao;
     this.actysCrawler = actysCrawler;
+    this.emailNotifier = emailNotifier;
+  }
+
+  public ActysNewRentalFinder(RentalsDao rentalsDao, EmailNotifier emailNotifier) {
+
+    this.rentalsDao = rentalsDao;
+    this.actysCrawler = new ActysCrawler();
+    this.emailNotifier = emailNotifier;
   }
 
   @Override
@@ -38,13 +44,16 @@ public class ActysNewRentalFinder extends TimerTask {
     Map<String, Rental> savedRentalNameMap =
         savedRentals.stream().collect(Collectors.toMap(Rental::getUrl, rental -> rental));
 
-    crawledRentalNameMap
-        .keySet()
-        .stream()
-        .filter(url -> !savedRentalNameMap.keySet().contains(url))
-        .map(crawledRentalNameMap::get)
-        .peek(rental -> rental.setStatus(Status.ACTIVE))
-        .forEach(rentalsDao::insertRental);
+    List<Rental> newRentals =
+        crawledRentalNameMap
+            .keySet()
+            .stream()
+            .filter(url -> !savedRentalNameMap.keySet().contains(url))
+            .map(crawledRentalNameMap::get)
+            .peek(rental -> rental.setStatus(Status.ACTIVE))
+            .collect(Collectors.toList());
+
+    newRentals.forEach(rentalsDao::insertRental);
 
     savedRentalNameMap
         .keySet()
@@ -53,5 +62,7 @@ public class ActysNewRentalFinder extends TimerTask {
         .map(savedRentalNameMap::get)
         .peek(rental -> rental.setStatus(Status.DELETED))
         .forEach(rentalsDao::updateRental);
+
+    emailNotifier.sendRentalEmail(newRentals);
   }
 }

@@ -11,6 +11,9 @@ public class Configuration {
   private String dbUser;
   private String dbPassword;
   private String dbUrl;
+  private String recipients;
+  private String senderEmail;
+  private String senderPassword;
 
   private Configuration() {}
 
@@ -48,5 +51,29 @@ public class Configuration {
 
   public void setDbUrl(String dbUrl) {
     this.dbUrl = dbUrl;
+  }
+
+  public String getRecipients() {
+    return recipients;
+  }
+
+  public void setRecipients(String recipients) {
+    this.recipients = recipients;
+  }
+
+  public String getSenderEmail() {
+    return senderEmail;
+  }
+
+  public void setSenderEmail(String senderEmail) {
+    this.senderEmail = senderEmail;
+  }
+
+  public String getSenderPassword() {
+    return senderPassword;
+  }
+
+  public void setSenderPassword(String senderPassword) {
+    this.senderPassword = senderPassword;
   }
 }
