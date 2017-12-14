@@ -19,21 +19,22 @@ public interface RentalsDao {
   @SqlUpdate(
       "CREATE TABLE IF NOT EXISTS homeless.rentals"
           + " ("
-          + "    ID VARCHAR(200) PRIMARY KEY NOT NULL AUTO_INCREMENT,"
-          + "    ADDRESS VARCHAR(1000) NOT NULL,"
-          + "    STATUS ENUM('DELETED', 'UPDATED', 'ACTIVE') NOT NULL,"
-          + "    PRICE DECIMAL(5) NOT NULL,"
-          + "    TYPE VARCHAR(20) NOT NULL,"
-          + "    AREA DECIMAL(3) NOT NULL,"
-          + "    ROOM_COUNT DECIMAL(1) NOT NULL,"
-          + "    AVAILABLE_DATE DATE,"
-          + "    INSERTION_DATE DATE,"
-          + "    LAST_UPDATE DATE,"
-          + "    URL VARCHAR(1000) NOT NULL"
+          + "    id MEDIUMINT NOT NULL AUTO_INCREMENT,"
+          + "    address VARCHAR(1000) NOT NULL,"
+          + "    status ENUM('DELETED', 'UPDATED', 'ACTIVE') NOT NULL,"
+          + "    price DECIMAL(5) NOT NULL,"
+          + "    type VARCHAR(20) NOT NULL,"
+          + "    area DECIMAL(3) NOT NULL,"
+          + "    roomCount DECIMAL(1) NOT NULL,"
+          + "    availableDate TIMESTAMP,"
+          + "    insertionDate TIMESTAMP,"
+          + "    lastUpdatedDate TIMESTAMP,"
+          + "    url VARCHAR(1000) NOT NULL,"
+          + "    PRIMARY KEY(id)"
           + " )")
   void createRentalsTable();
 
-  @SqlQuery("SELECT * FROM homeless.rentals WHERE STATUS = :status")
+  @SqlQuery("SELECT * FROM homeless.rentals WHERE status = :status")
   List<Rental> findByStatus(@Bind("status") Status status);
 
   @SqlUpdate(

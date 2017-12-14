@@ -12,6 +12,7 @@ public class Rental {
   private int roomCount;
   private Instant availableDate;
   private Instant insertionDate;
+  private Instant lastUpdatedDate;
   private String address;
   private String url;
 
@@ -95,6 +96,14 @@ public class Rental {
     this.url = url;
   }
 
+  public Instant getLastUpdatedDate() {
+    return lastUpdatedDate;
+  }
+
+  public void setLastUpdatedDate(Instant lastUpdatedDate) {
+    this.lastUpdatedDate = lastUpdatedDate;
+  }
+
   public static class Builder {
     private Rental rental;
 
@@ -139,6 +148,11 @@ public class Rental {
 
     public Builder setInsertionDate(Instant insertionDate) {
       this.rental.insertionDate = insertionDate;
+      return this;
+    }
+
+    public Builder setLastUpdatedDate(Instant lastUpdatedDate) {
+      this.rental.lastUpdatedDate = lastUpdatedDate;
       return this;
     }
 

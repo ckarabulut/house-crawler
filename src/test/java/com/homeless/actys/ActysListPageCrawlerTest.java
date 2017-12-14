@@ -4,8 +4,7 @@ import com.homeless.TestDataHelper;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.net.URI;
-import java.util.List;
+import java.util.Set;
 
 public class ActysListPageCrawlerTest {
 
@@ -14,14 +13,14 @@ public class ActysListPageCrawlerTest {
     ActysListPageCrawler actysListPageCrawler = new ActysListPageCrawler();
 
     String html = TestDataHelper.getResourceAsString("/ListPage.html");
-    List<URI> pageDetailUrls = actysListPageCrawler.getCurrentPageDetailUrls(html);
+    Set<String> pageDetailUrls = actysListPageCrawler.getCurrentPageDetailUrls(html);
 
-    Assert.assertEquals(
-        "/huurwoningen/veenendaal/veenendaal-willem-barentszstraat-125-1",
-        pageDetailUrls.get(0).toString());
-
-    Assert.assertEquals(
-        "/huurwoningen/rhenen/rhenen-de-hollentoren-4", pageDetailUrls.get(1).toString());
+    Assert.assertTrue(
+        pageDetailUrls.contains(
+            "https://www.wonenmetactys.nl/huurwoningen/veenendaal/veenendaal-willem-barentszstraat-125-1"));
+    Assert.assertTrue(
+        pageDetailUrls.contains(
+            "https://www.wonenmetactys.nl/huurwoningen/rhenen/rhenen-de-hollentoren-4"));
   }
 
   @Test

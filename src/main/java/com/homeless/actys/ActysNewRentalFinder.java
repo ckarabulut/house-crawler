@@ -26,7 +26,6 @@ public class ActysNewRentalFinder extends TimerTask {
 
   @Override
   public void run() {
-
     List<Rental> crawledRentals = actysCrawler.getAllRentals();
     Map<String, Rental> crawledRentalNameMap =
         crawledRentals.stream().collect(Collectors.toMap(Rental::getAddress, rental -> rental));

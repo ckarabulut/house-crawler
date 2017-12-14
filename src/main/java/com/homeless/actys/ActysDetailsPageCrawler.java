@@ -10,11 +10,27 @@ import java.net.URI;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.util.Locale;
 
 public class ActysDetailsPageCrawler {
+
+  private DateTimeFormatter dateTimeFormatter;
+
+  public ActysDetailsPageCrawler() {
+    this.dateTimeFormatter =
+        new DateTimeFormatterBuilder()
+            .appendPattern("dd-MM-yyyy")
+            .parseDefaulting(ChronoField.NANO_OF_DAY, 0)
+            .toFormatter()
+            .withZone(ZoneId.of("Europe/Amsterdam"));
+    ;
+  }
+
   public Rental getRentalDetails(String html) {
     Document document = Jsoup.parse(html);
     return getRental(document);
@@ -38,12 +54,14 @@ public class ActysDetailsPageCrawler {
         document.select(".table-unbordered.hidden-xs").select("tr").get(1).select("td");
     rental.setRoomCount(Integer.parseInt(elements.get(2).text().replace("kamers", "").trim()));
     rental.setArea(Integer.parseInt(elements.get(3).text().replace("m2", "").trim()));
+    Instant now = Instant.now();
     if (elements.get(4).text().contains("per direct")) {
-      rental.setAvailableDate(Instant.now().truncatedTo(ChronoUnit.DAYS));
+      rental.setAvailableDate(now.truncatedTo(ChronoUnit.DAYS));
     } else {
-      DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-      rental.setAvailableDate(Instant.from(dateTimeFormatter.parse(elements.get(4).text())));
+      rental.setAvailableDate(dateTimeFormatter.parse(elements.get(4).text(), Instant::from));
     }
+    rental.setInsertionDate(now);
+    rental.setLastUpdatedDate(now);
     rental.setAddress(
         document.select("h1[itemprop=streetAddress]").text()
             + " "
@@ -55,18 +73,20 @@ public class ActysDetailsPageCrawler {
     NumberFormat formatter = NumberFormat.getNumberInstance(Locale.GERMAN);
     Number parse = null;
     try {
+      String priceString = document
+              .select("tr.light-green")
+              .select("td.table-cell--unbordered")
+              .select("span")
+              .text()
+              .replace("€", "")
+              .replace("p/mnd", "")
+              .trim();
       parse =
           formatter.parse(
-              document
-                  .select("tr.light-green")
-                  .select("td.table-cell--unbordered")
-                  .select("span")
-                  .text()
-                  .replace("€", "")
-                  .replace("p/mnd", "")
-                  .trim());
+                  priceString);
     } catch (ParseException e) {
-      throw new RuntimeException(e);
+      System.out.println();
+      return 0;
     }
     return parse.intValue();
   }
