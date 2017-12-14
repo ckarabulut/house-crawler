@@ -25,7 +25,7 @@ public class ActysCrawler {
   public List<Rental> getAllRentals() {
     List<URI> allPageUrls = actysListPageCrawler.getAllPageUrls();
     return allPageUrls
-        .stream()
+        .parallelStream()
         .map(detailsPageCrawler::getRentalDetails)
         .collect(Collectors.toList());
   }

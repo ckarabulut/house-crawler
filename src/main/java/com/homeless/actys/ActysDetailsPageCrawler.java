@@ -16,10 +16,13 @@ import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ActysDetailsPageCrawler {
 
-  private DateTimeFormatter dateTimeFormatter;
+  private static Logger logger = Logger.getLogger(ActysDetailsPageCrawler.class.getName());
+  private final DateTimeFormatter dateTimeFormatter;
 
   public ActysDetailsPageCrawler() {
     this.dateTimeFormatter =
@@ -37,13 +40,25 @@ public class ActysDetailsPageCrawler {
   }
 
   public Rental getRentalDetails(URI uri) {
-    Document parsed = null;
+    Document parsed;
     try {
       parsed = Jsoup.parse(uri.toURL(), 60000);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-    return getRental(parsed);
+    try {
+      if (parsed.select(".nav-tabs li a").get(2).text().equals("Woningtypen")) {
+        logger.log(
+            Level.INFO,
+            String.format("House group with zero link will be passed. Url %s", uri.toString()));
+        return null;
+      }
+      return getRental(parsed);
+    } catch (RuntimeException e) {
+      logger.log(
+          Level.SEVERE, String.format("There is an error while parsing %s", uri.toString()), e);
+      return null;
+    }
   }
 
   private Rental getRental(Document document) {
@@ -52,13 +67,17 @@ public class ActysDetailsPageCrawler {
     rental.setPrice(getPrice(document));
     Elements elements =
         document.select(".table-unbordered.hidden-xs").select("tr").get(1).select("td");
-    rental.setRoomCount(Integer.parseInt(elements.get(2).text().replace("kamers", "").trim()));
+    rental.setType(elements.get(0).text().trim());
+    rental.setRoomCount(
+        Integer.parseInt(elements.get(2).text().replace("kamers", "").replace("kamer", "").trim()));
     rental.setArea(Integer.parseInt(elements.get(3).text().replace("m2", "").trim()));
     Instant now = Instant.now();
-    if (elements.get(4).text().contains("per direct")) {
-      rental.setAvailableDate(now.truncatedTo(ChronoUnit.DAYS));
-    } else {
-      rental.setAvailableDate(dateTimeFormatter.parse(elements.get(4).text(), Instant::from));
+    if (!elements.get(1).text().contains("Nieuwbouw")) {
+      if (elements.get(4).text().contains("per direct")) {
+        rental.setAvailableDate(now.truncatedTo(ChronoUnit.DAYS));
+      } else if (!elements.get(4).text().contains("Binnenkort beschikbaar")) {
+        rental.setAvailableDate(dateTimeFormatter.parse(elements.get(4).text(), Instant::from));
+      }
     }
     rental.setInsertionDate(now);
     rental.setLastUpdatedDate(now);
@@ -71,9 +90,11 @@ public class ActysDetailsPageCrawler {
 
   private int getPrice(Document document) {
     NumberFormat formatter = NumberFormat.getNumberInstance(Locale.GERMAN);
-    Number parse = null;
+    Number parse;
+    String priceString = "";
     try {
-      String priceString = document
+      priceString =
+          document
               .select("tr.light-green")
               .select("td.table-cell--unbordered")
               .select("span")
@@ -81,12 +102,9 @@ public class ActysDetailsPageCrawler {
               .replace("€", "")
               .replace("p/mnd", "")
               .trim();
-      parse =
-          formatter.parse(
-                  priceString);
+      parse = formatter.parse(priceString);
     } catch (ParseException e) {
-      System.out.println();
-      return 0;
+      throw new RuntimeException(String.format("Number %s can not be parsed", priceString));
     }
     return parse.intValue();
   }

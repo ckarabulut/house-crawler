@@ -1,11 +1,12 @@
 package com.homeless.actys;
 
 import com.homeless.models.Rental;
-import com.homeless.rentals.RentalsDao;
 import com.homeless.models.Status;
+import com.homeless.rentals.RentalsDao;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TimerTask;
 import java.util.stream.Collectors;
 
@@ -28,23 +29,27 @@ public class ActysNewRentalFinder extends TimerTask {
   public void run() {
     List<Rental> crawledRentals = actysCrawler.getAllRentals();
     Map<String, Rental> crawledRentalNameMap =
-        crawledRentals.stream().collect(Collectors.toMap(Rental::getAddress, rental -> rental));
+        crawledRentals
+            .stream()
+            .filter(Objects::nonNull)
+            .collect(Collectors.toMap(Rental::getUrl, t -> t));
 
     List<Rental> savedRentals = rentalsDao.findByStatus(Status.ACTIVE);
     Map<String, Rental> savedRentalNameMap =
-        savedRentals.stream().collect(Collectors.toMap(Rental::getAddress, rental -> rental));
+        savedRentals.stream().collect(Collectors.toMap(Rental::getUrl, rental -> rental));
 
     crawledRentalNameMap
         .keySet()
         .stream()
-        .filter(address -> !savedRentalNameMap.keySet().contains(address))
+        .filter(url -> !savedRentalNameMap.keySet().contains(url))
         .map(crawledRentalNameMap::get)
+        .peek(rental -> rental.setStatus(Status.ACTIVE))
         .forEach(rentalsDao::insertRental);
 
     savedRentalNameMap
         .keySet()
         .stream()
-        .filter(address -> !crawledRentalNameMap.keySet().contains(address))
+        .filter(url -> !crawledRentalNameMap.keySet().contains(url))
         .map(savedRentalNameMap::get)
         .peek(rental -> rental.setStatus(Status.DELETED))
         .forEach(rentalsDao::updateRental);

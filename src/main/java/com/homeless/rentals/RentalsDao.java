@@ -39,7 +39,7 @@ public interface RentalsDao {
 
   @SqlUpdate(
       "INSERT INTO homeless.rentals "
-          + " VALUES(:id, :address, :status, :price, :type, :area, :roomCount, :availableDate, :insertionDate, :lastUpdateDate, :url)")
+          + " VALUES(:id, :address, :status, :price, :type, :area, :roomCount, :availableDate, :insertionDate, :lastUpdatedDate, :url)")
   void insertRental(@BindBean Rental rental);
 
   @SqlUpdate(
@@ -52,7 +52,7 @@ public interface RentalsDao {
           + " roomCount= :roomCount,"
           + " availableDate= :availableDate,"
           + " insertionDate= :insertionDate,"
-          + " lastUpdateDate= :lastUpdateDate,"
+          + " lastUpdatedDate= :lastUpdatedDate,"
           + " url= :url"
           + " WHERE id= :id")
   void updateRental(@BindBean Rental rental);
