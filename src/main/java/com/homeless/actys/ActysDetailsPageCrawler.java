@@ -47,12 +47,6 @@ public class ActysDetailsPageCrawler {
       throw new RuntimeException(e);
     }
     try {
-      if (parsed.select(".nav-tabs li a").get(2).text().equals("Woningtypen")) {
-        logger.log(
-            Level.INFO,
-            String.format("House group with zero link will be passed. Url %s", uri.toString()));
-        return null;
-      }
       return getRental(parsed);
     } catch (RuntimeException e) {
       logger.log(
@@ -62,6 +56,10 @@ public class ActysDetailsPageCrawler {
   }
 
   private Rental getRental(Document document) {
+    boolean isHouseGroup = document.select(".nav-tabs li a").get(2).text().equals("Woningtypen");
+    if (isHouseGroup) {
+      return null;
+    }
     Rental rental = new Rental();
     rental.setUrl(document.select("link[rel=canonical]").attr("href"));
     rental.setPrice(getPrice(document));
