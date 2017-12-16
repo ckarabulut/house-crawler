@@ -9,9 +9,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TimerTask;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public class ActysNewRentalFinder extends TimerTask {
+  private static Logger logger = Logger.getLogger(ActysNewRentalFinder.class.getName());
 
   private final RentalsDao rentalsDao;
   private final ActysCrawler actysCrawler;
@@ -33,6 +36,25 @@ public class ActysNewRentalFinder extends TimerTask {
 
   @Override
   public void run() {
+    long s = System.currentTimeMillis();
+    try {
+      logger.log(Level.INFO, "Crawling has started.");
+      doRun();
+      logger.log(
+          Level.INFO,
+          String.format(
+              "Crawling has ended in %d seconds", (System.currentTimeMillis() - s) / 1000));
+    } catch (RuntimeException e) {
+      logger.log(
+          Level.SEVERE,
+          String.format(
+              "Crawling has ended with an error in %d seconds.",
+              (System.currentTimeMillis() - s) / 1000),
+          e);
+    }
+  }
+
+  private void doRun() {
     List<Rental> crawledRentals = actysCrawler.getAllRentals();
     Map<String, Rental> crawledRentalNameMap =
         crawledRentals
