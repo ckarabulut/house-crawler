@@ -97,7 +97,7 @@ public class ActysDetailsPageCrawler {
               .select("td.table-cell--unbordered")
               .select("span")
               .text()
-              .replace("€", "")
+              .replace("\u20ac", "")
               .replace("p/mnd", "")
               .trim();
       parse = formatter.parse(priceString);
