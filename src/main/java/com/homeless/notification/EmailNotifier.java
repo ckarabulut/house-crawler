@@ -62,8 +62,8 @@ public class EmailNotifier {
           InternetAddress.parse(recipientList.stream().collect(Collectors.joining(","))));
       message.setSubject("Homeless rentals");
       message.setText(
-          "Dear Homeless member,"
-              + "\n\n We found these rentals for ya! \n\n"
+          "Dear Homeless member,\n\n"
+              + "We found these new rentals for ya!\n\n"
               + rentalList.stream().map(Rental::getUrl).collect(Collectors.joining("\n")));
 
       Transport.send(message);
