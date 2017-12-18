@@ -1,6 +1,6 @@
 package com.homeless.actys;
 
-import com.homeless.models.Rental;
+import com.homeless.rentals.models.Rental;
 
 import java.net.URI;
 import java.util.List;

@@ -1,9 +1,9 @@
 package com.homeless.actys;
 
-import com.homeless.models.Rental;
-import com.homeless.models.Status;
-import com.homeless.notification.EmailNotifier;
+import com.homeless.notification.NotificationController;
 import com.homeless.rentals.RentalsDao;
+import com.homeless.rentals.models.Rental;
+import com.homeless.rentals.models.Status;
 
 import java.util.List;
 import java.util.Map;
@@ -18,20 +18,22 @@ public class ActysNewRentalFinder extends TimerTask {
 
   private final RentalsDao rentalsDao;
   private final ActysCrawler actysCrawler;
-  private final EmailNotifier emailNotifier;
+  private final NotificationController notificationController;
 
   public ActysNewRentalFinder(
-      RentalsDao rentalsDao, ActysCrawler actysCrawler, EmailNotifier emailNotifier) {
+      RentalsDao rentalsDao,
+      ActysCrawler actysCrawler,
+      NotificationController notificationController) {
     this.rentalsDao = rentalsDao;
     this.actysCrawler = actysCrawler;
-    this.emailNotifier = emailNotifier;
+    this.notificationController = notificationController;
   }
 
-  public ActysNewRentalFinder(RentalsDao rentalsDao, EmailNotifier emailNotifier) {
-
+  public ActysNewRentalFinder(
+      RentalsDao rentalsDao, NotificationController notificationController) {
     this.rentalsDao = rentalsDao;
     this.actysCrawler = new ActysCrawler();
-    this.emailNotifier = emailNotifier;
+    this.notificationController = notificationController;
   }
 
   @Override
@@ -85,6 +87,6 @@ public class ActysNewRentalFinder extends TimerTask {
         .peek(rental -> rental.setStatus(Status.DELETED))
         .forEach(rentalsDao::updateRental);
 
-    emailNotifier.sendRentalEmail(newRentals);
+    notificationController.sendRentalEmail(newRentals);
   }
 }

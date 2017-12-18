@@ -1,7 +1,7 @@
 package com.homeless.actys;
 
 import com.homeless.TestDataHelper;
-import com.homeless.models.Rental;
+import com.homeless.rentals.models.Rental;
 import org.junit.Assert;
 import org.junit.Test;
 

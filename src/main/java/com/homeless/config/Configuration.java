@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Properties;
 
 public class Configuration {
@@ -11,11 +12,15 @@ public class Configuration {
   private String dbUser;
   private String dbPassword;
   private String dbUrl;
-  private String recipients;
   private String senderEmail;
   private String senderPassword;
 
   private Configuration() {}
+
+  public static Configuration fromMap(Map<String, String> map) {
+    Gson gson = new Gson();
+    return gson.fromJson(gson.toJson(map), Configuration.class);
+  }
 
   public static Configuration fromPropertiesFiles() {
     Properties properties = new Properties();
@@ -51,14 +56,6 @@ public class Configuration {
 
   public void setDbUrl(String dbUrl) {
     this.dbUrl = dbUrl;
-  }
-
-  public String getRecipients() {
-    return recipients;
-  }
-
-  public void setRecipients(String recipients) {
-    this.recipients = recipients;
   }
 
   public String getSenderEmail() {

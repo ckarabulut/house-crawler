@@ -1,6 +1,6 @@
 package com.homeless.actys;
 
-import com.homeless.models.Rental;
+import com.homeless.rentals.models.Rental;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;

@@ -1,7 +1,7 @@
 package com.homeless.rentals;
 
-import com.homeless.models.Rental;
-import com.homeless.models.Status;
+import com.homeless.rentals.models.Rental;
+import com.homeless.rentals.models.Status;
 import org.jdbi.v3.core.mapper.RowMapper;
 import org.jdbi.v3.core.statement.StatementContext;
 

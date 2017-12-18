@@ -1,4 +1,4 @@
-package com.homeless.models;
+package com.homeless.rentals.models;
 
 import java.time.Instant;
 

@@ -1,9 +1,9 @@
 package com.homeless.actys;
 
-import com.homeless.models.Rental;
-import com.homeless.models.Status;
-import com.homeless.notification.EmailNotifier;
+import com.homeless.notification.NotificationController;
 import com.homeless.rentals.RentalsDao;
+import com.homeless.rentals.models.Rental;
+import com.homeless.rentals.models.Status;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -16,9 +16,9 @@ public class ActysNewRentalFinderTest {
   public void test() {
     RentalsDao dao = Mockito.mock(RentalsDao.class);
     ActysCrawler crawler = Mockito.mock(ActysCrawler.class);
-    EmailNotifier emailNotifier = Mockito.mock(EmailNotifier.class);
+    NotificationController notificationController = Mockito.mock(NotificationController.class);
     ActysNewRentalFinder actysNewRentalFinder =
-        new ActysNewRentalFinder(dao, crawler, emailNotifier);
+        new ActysNewRentalFinder(dao, crawler, notificationController);
 
     Rental rental2 = new Rental.Builder().setUrl("url2").build();
     Rental rental1 = new Rental.Builder().setUrl("url1").build();
@@ -30,6 +30,6 @@ public class ActysNewRentalFinderTest {
 
     Mockito.verify(dao).insertRental(rental3);
     Mockito.verify(dao).updateRental(rental1);
-    Mockito.verify(emailNotifier).sendRentalEmail(Collections.singletonList(rental3));
+    Mockito.verify(notificationController).sendRentalEmail(Collections.singletonList(rental3));
   }
 }

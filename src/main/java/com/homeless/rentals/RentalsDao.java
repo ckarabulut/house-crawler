@@ -1,7 +1,7 @@
 package com.homeless.rentals;
 
-import com.homeless.models.Rental;
-import com.homeless.models.Status;
+import com.homeless.rentals.models.Rental;
+import com.homeless.rentals.models.Status;
 import org.jdbi.v3.sqlobject.config.RegisterRowMapper;
 import org.jdbi.v3.sqlobject.customizer.Bind;
 import org.jdbi.v3.sqlobject.customizer.BindBean;
