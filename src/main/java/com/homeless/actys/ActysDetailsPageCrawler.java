@@ -93,13 +93,11 @@ public class ActysDetailsPageCrawler {
     try {
       priceString =
           document
-              .select("tr.light-green")
-              .select("td.table-cell--unbordered")
-              .select("span")
+              .select(".result_summary")
+              .select("div[itemprop*='address'] b")
               .text()
-              .replace("\u20ac", "")
-              .replace("p/mnd", "")
-              .trim();
+              .replaceAll("[^0-9.,-]", "");
+
       parse = formatter.parse(priceString);
     } catch (ParseException e) {
       throw new RuntimeException(String.format("Number %s can not be parsed", priceString));
