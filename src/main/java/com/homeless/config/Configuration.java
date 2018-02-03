@@ -29,6 +29,15 @@ public class Configuration {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+    for (String key : properties.stringPropertyNames()) {
+      String property = properties.getProperty(key);
+      if (property.matches("^\\$\\{[A-Z_]+}$")) {
+        String substring = property.substring(2, property.length() - 1);
+        String getenv = System.getenv(substring);
+        properties.setProperty(key, getenv);
+      }
+    }
+
     Gson gson = new Gson();
     JsonElement jsonElement = gson.toJsonTree(properties);
     return gson.fromJson(jsonElement, Configuration.class);
