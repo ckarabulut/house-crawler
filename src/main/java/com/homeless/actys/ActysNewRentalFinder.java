@@ -7,7 +7,6 @@ import com.homeless.rentals.models.Status;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,10 +58,7 @@ public class ActysNewRentalFinder extends TimerTask {
   private void doRun() {
     List<Rental> crawledRentals = actysCrawler.getAllRentals();
     Map<String, Rental> crawledRentalNameMap =
-        crawledRentals
-            .stream()
-            .filter(Objects::nonNull)
-            .collect(Collectors.toMap(Rental::getUrl, t -> t));
+        crawledRentals.stream().collect(Collectors.toMap(Rental::getUrl, t -> t));
 
     List<Rental> savedRentals = rentalsDao.findByStatus(Status.ACTIVE);
     Map<String, Rental> savedRentalNameMap =

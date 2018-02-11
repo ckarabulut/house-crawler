@@ -8,9 +8,8 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class ActysListPageCrawler {
@@ -39,13 +38,18 @@ public class ActysListPageCrawler {
   }
 
   public List<URI> getAllPageUrls() {
-    Set<String> result = new HashSet<>();
-    boolean stop = false;
-    for (int i = 1; !stop; i++) {
-      Set<String> urls = getCurrentPageDetailUrls(getDocument(url + i));
-      stop = urls.isEmpty();
-      result.addAll(urls);
+    Set<String> result = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
+    Set<Element> elementSet = Collections.newSetFromMap(new ConcurrentHashMap<Element, Boolean>());
+    for (int i = 1; true; i++) {
+      Document doc = getDocument(url + i);
+      Elements elements = doc.select(".result_row");
+      if (elements.isEmpty()) {
+        break;
+      }
+      elementSet.addAll(elements);
     }
+    getUrls(result, elementSet);
+
     return result
         .stream()
         .map(
@@ -57,6 +61,22 @@ public class ActysListPageCrawler {
               }
             })
         .collect(Collectors.toList());
+  }
+
+  private void getUrls(Set<String> result, Collection<Element> elementSet) {
+    elementSet
+        .parallelStream()
+        .forEach(
+            element -> {
+              String url = actysLandingPageUrl + element.attr("href");
+              Document doc = getDocument(url);
+              Elements elements = doc.select(".result_row");
+              if (elements.isEmpty()) {
+                result.add(url);
+              } else {
+                getUrls(result, elements);
+              }
+            });
   }
 
   protected Document getDocument(String url) {

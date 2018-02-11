@@ -4,6 +4,7 @@ import com.homeless.rentals.models.Rental;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class ActysCrawler {
@@ -27,6 +28,7 @@ public class ActysCrawler {
     return allPageUrls
         .parallelStream()
         .map(detailsPageCrawler::getRentalDetails)
+        .filter(Objects::nonNull)
         .collect(Collectors.toList());
   }
 }

@@ -30,6 +30,6 @@ public class Application {
     Timer t = new Timer();
     ActysNewRentalFinder crawler =
         new ActysNewRentalFinder(daoFactory.getRentalsDao(), notificationController);
-    t.scheduleAtFixedRate(crawler, 0, 4 * 60 * 1000);
+    t.scheduleAtFixedRate(crawler, 0, 5 * 60 * 1000);
   }
 }
