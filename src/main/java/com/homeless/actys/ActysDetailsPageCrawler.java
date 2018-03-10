@@ -1,11 +1,11 @@
 package com.homeless.actys;
 
+import com.homeless.proxies.JsoupWrapperWithProxy;
 import com.homeless.rentals.models.Rental;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
-import java.io.IOException;
 import java.net.URI;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -40,12 +40,7 @@ public class ActysDetailsPageCrawler {
   }
 
   public Rental getRentalDetails(URI uri) {
-    Document parsed;
-    try {
-      parsed = Jsoup.parse(uri.toURL(), 60000);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    Document parsed = JsoupWrapperWithProxy.getDocument(uri);
     try {
       return getRental(parsed);
     } catch (RuntimeException e) {

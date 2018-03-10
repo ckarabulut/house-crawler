@@ -1,11 +1,11 @@
 package com.homeless.actys;
 
+import com.homeless.proxies.JsoupWrapperWithProxy;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
@@ -27,7 +27,8 @@ public class ActysListPageCrawler {
     Elements elements = doc.select(".result_row");
     for (Element element : elements) {
       String url = actysLandingPageUrl + element.attr("href");
-      Set<String> currentPageDetailUrls = getCurrentPageDetailUrls(getDocument(url));
+      Document document = JsoupWrapperWithProxy.getDocument(url);
+      Set<String> currentPageDetailUrls = getCurrentPageDetailUrls(document);
       if (currentPageDetailUrls.isEmpty()) {
         result.add(url);
       } else {
@@ -41,7 +42,7 @@ public class ActysListPageCrawler {
     Set<String> result = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
     Set<Element> elementSet = Collections.newSetFromMap(new ConcurrentHashMap<Element, Boolean>());
     for (int i = 1; true; i++) {
-      Document doc = getDocument(url + i);
+      Document doc = JsoupWrapperWithProxy.getDocument(url + i);
       Elements elements = doc.select(".result_row");
       if (elements.isEmpty()) {
         break;
@@ -69,7 +70,7 @@ public class ActysListPageCrawler {
         .forEach(
             element -> {
               String url = actysLandingPageUrl + element.attr("href");
-              Document doc = getDocument(url);
+              Document doc = JsoupWrapperWithProxy.getDocument(url);
               Elements elements = doc.select(".result_row");
               if (elements.isEmpty()) {
                 result.add(url);
@@ -77,26 +78,5 @@ public class ActysListPageCrawler {
                 getUrls(result, elements);
               }
             });
-  }
-
-  protected Document getDocument(String url) {
-    try {
-      return Jsoup.connect(url)
-          .header(
-              "Accept",
-              "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8")
-          .header("Accept-Encoding", "gzip, deflate, br")
-          .header("Accept-Language", "en-US,en;q=0.8,tr;q=0.6")
-          .header("Cache-Control", "max-age=0")
-          .header("Connection", "keep-alive")
-          .header("Host", "www.wonenmetactys.nl")
-          .header(
-              "User-Agent",
-              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36")
-          .timeout(60000)
-          .get();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
   }
 }
