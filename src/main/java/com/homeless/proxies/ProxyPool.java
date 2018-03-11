@@ -6,8 +6,10 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -47,7 +49,7 @@ public class ProxyPool {
       throw new RuntimeException(e);
     }
     Elements elements = document.select("#proxylisttable tbody tr");
-    return Collections.synchronizedList(
+    Set<Proxy> proxySet =
         elements
             .stream()
             .map(
@@ -64,7 +66,12 @@ public class ProxyPool {
                       td.get(7).text());
                 })
             .filter(e -> e.isHttps() && e.getProxyType().equals("elite proxy"))
-            .collect(Collectors.toList()));
+            .distinct()
+            .collect(Collectors.toSet());
+    if (this.proxies != null) {
+      proxySet.addAll(this.proxies);
+    }
+    return Collections.synchronizedList(new ArrayList<>(proxySet));
   }
 
   public Proxy getNextProxy() {
