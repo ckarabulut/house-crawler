@@ -62,8 +62,7 @@ public class ProxyPool {
                       td.get(3).text(),
                       td.get(4).text(),
                       td.get(5).text().equals("yes"),
-                      td.get(6).text().equals("yes"),
-                      td.get(7).text());
+                      td.get(6).text().equals("yes"));
                 })
             .filter(e -> e.isHttps() && e.getProxyType().equals("elite proxy"))
             .distinct()

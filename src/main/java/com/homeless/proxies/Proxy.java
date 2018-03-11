@@ -10,7 +10,6 @@ public class Proxy {
   private final String proxyType;
   private final boolean google;
   private final boolean https;
-  private final String lastChecked;
   private int reliability;
 
   public Proxy(
@@ -20,8 +19,7 @@ public class Proxy {
       String country,
       String proxyType,
       boolean google,
-      boolean https,
-      String lastChecked) {
+      boolean https) {
     this.ip = ip;
     this.port = port;
     this.code = code;
@@ -29,7 +27,6 @@ public class Proxy {
     this.proxyType = proxyType;
     this.google = google;
     this.https = https;
-    this.lastChecked = lastChecked;
     this.reliability = 10;
   }
 
@@ -61,10 +58,6 @@ public class Proxy {
     return https;
   }
 
-  public String getLastChecked() {
-    return lastChecked;
-  }
-
   public boolean isReliable() {
     return reliability > 0;
   }
@@ -94,9 +87,6 @@ public class Proxy {
         + google
         + ", https="
         + https
-        + ", lastChecked='"
-        + lastChecked
-        + '\''
         + '}';
   }
 
