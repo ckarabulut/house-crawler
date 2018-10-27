@@ -23,7 +23,7 @@ public interface RentalsDao {
           + "    address VARCHAR(1000) NOT NULL,"
           + "    status ENUM('DELETED', 'UPDATED', 'ACTIVE') NOT NULL,"
           + "    price DECIMAL(5) NOT NULL,"
-          + "    type VARCHAR(20) NOT NULL,"
+          + "    type VARCHAR(100) NOT NULL,"
           + "    area DECIMAL(3) NOT NULL,"
           + "    roomCount DECIMAL(1) NOT NULL,"
           + "    availableDate TIMESTAMP,"
