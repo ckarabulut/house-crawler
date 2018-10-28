@@ -6,7 +6,6 @@ import com.homeless.filters.RangeFilter;
 import com.homeless.filters.UrlFilter;
 import com.homeless.recipients.RecipientsDao;
 import com.homeless.rentals.models.Rental;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;

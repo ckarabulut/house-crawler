@@ -2,7 +2,6 @@ package com.homeless.config;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
-
 import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;

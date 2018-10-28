@@ -1,9 +1,5 @@
 package com.homeless.proxies;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.select.Elements;
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -12,10 +8,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
 
 public class ProxyPool {
 
@@ -31,7 +31,7 @@ public class ProxyPool {
             () -> {
               while (true) {
                 try {
-                  Thread.sleep(30 * 60 * 1000);
+                  Thread.sleep(TimeUnit.MILLISECONDS.convert(30, TimeUnit.MINUTES));
                 } catch (InterruptedException e) {
                   throw new RuntimeException(e);
                 }
@@ -65,7 +65,6 @@ public class ProxyPool {
                       td.get(6).text().equals("yes"));
                 })
             .filter(e -> e.isHttps() && e.getProxyType().equals("elite proxy"))
-            .distinct()
             .collect(Collectors.toSet());
     if (this.proxies != null) {
       proxySet.addAll(this.proxies);

@@ -2,7 +2,6 @@ package com.homeless.filters;
 
 import com.homeless.recipients.Recipient;
 import com.homeless.rentals.models.Rental;
-
 import java.util.List;
 
 public class RangeFilter implements Filter {

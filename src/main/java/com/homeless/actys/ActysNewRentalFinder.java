@@ -4,7 +4,6 @@ import com.homeless.notification.NotificationController;
 import com.homeless.rentals.RentalsDao;
 import com.homeless.rentals.models.Rental;
 import com.homeless.rentals.models.Status;
-
 import java.util.List;
 import java.util.Map;
 import java.util.TimerTask;

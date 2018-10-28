@@ -1,14 +1,11 @@
 package com.homeless.rentals;
 
 import com.homeless.rentals.models.Rental;
-import com.homeless.rentals.models.Status;
+import java.util.List;
 import org.jdbi.v3.sqlobject.config.RegisterRowMapper;
-import org.jdbi.v3.sqlobject.customizer.Bind;
 import org.jdbi.v3.sqlobject.customizer.BindBean;
 import org.jdbi.v3.sqlobject.statement.SqlQuery;
 import org.jdbi.v3.sqlobject.statement.SqlUpdate;
-
-import java.util.List;
 
 @RegisterRowMapper(RentalMapper.class)
 public interface RentalsDao {

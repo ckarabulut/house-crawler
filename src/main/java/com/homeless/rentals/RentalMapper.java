@@ -2,11 +2,12 @@ package com.homeless.rentals;
 
 import com.homeless.rentals.models.Rental;
 import com.homeless.rentals.models.Status;
-import org.jdbi.v3.core.mapper.RowMapper;
-import org.jdbi.v3.core.statement.StatementContext;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.Instant;
+import org.jdbi.v3.core.mapper.RowMapper;
+import org.jdbi.v3.core.statement.StatementContext;
 
 public class RentalMapper implements RowMapper<Rental> {
 
@@ -19,11 +20,19 @@ public class RentalMapper implements RowMapper<Rental> {
     rental.setType(r.getString("type"));
     rental.setArea(r.getInt("area"));
     rental.setRoomCount(r.getInt("roomCount"));
-    rental.setAvailableDate(r.getTimestamp("availableDate").toInstant());
-    rental.setInsertionDate(r.getTimestamp("insertionDate").toInstant());
-    rental.setLastUpdatedDate(r.getTimestamp("lastUpdatedDate").toInstant());
+    rental.setAvailableDate(getNullableDate(r, "availableDate"));
+    rental.setInsertionDate(getNullableDate(r, "insertionDate"));
+    rental.setLastUpdatedDate(getNullableDate(r, "lastUpdatedDate"));
     rental.setAddress(r.getString("address"));
     rental.setUrl(r.getString("url"));
     return rental;
+  }
+
+  private Instant getNullableDate(ResultSet r, String fieldName) throws SQLException {
+    Timestamp timestamp = r.getTimestamp(fieldName);
+    if (timestamp == null) {
+      return null;
+    }
+    return timestamp.toInstant();
   }
 }

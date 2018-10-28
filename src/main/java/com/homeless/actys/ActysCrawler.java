@@ -3,10 +3,6 @@ package com.homeless.actys;
 import com.homeless.proxies.JsoupWrapperWithProxy;
 import com.homeless.rentals.models.Rental;
 import com.homeless.rentals.models.Status;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.time.Instant;
@@ -16,14 +12,22 @@ import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ActysCrawler {
 
+  private final Logger logger = LoggerFactory.getLogger(this.getClass());
   private final String actysUrl = "https://ikwilhuren.nu/";
   private final String rentalListUrl = actysUrl + "huurwoningen/pagina/";
   private final DateTimeFormatter dateTimeFormatter;
@@ -42,7 +46,9 @@ public class ActysCrawler {
   }
 
   public List<Rental> getAllRentals() {
-    Set<Element> elementSet = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    List<Rental> rentals = Collections.synchronizedList(new LinkedList<>());
+    System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", "40");
+    ExecutorService executorService = Executors.newFixedThreadPool(20);
     Element lastElement = null;
     for (int i = 1; true; i++) {
       Document doc = JsoupWrapperWithProxy.getDocument(rentalListUrl + i);
@@ -55,32 +61,46 @@ public class ActysCrawler {
         break;
       }
       lastElement = elements.get(elements.size() - 1);
-      elementSet.addAll(elements);
+      executorService.submit(
+          () -> {
+            rentals.addAll(
+                elements.parallelStream().map(this::createRental).collect(Collectors.toList()));
+          });
     }
-
-    return elementSet.parallelStream().map(this::createRental).collect(Collectors.toList());
+    executorService.shutdown();
+    try {
+      executorService.awaitTermination(30, TimeUnit.MINUTES);
+    } catch (InterruptedException e) {
+      logger.error("Couldn't fetch all records on time", e);
+    }
+    return rentals;
   }
 
   private Rental createRental(Element element) {
     Rental rental = new Rental();
-    rental.setUrl(element.select("div.adres a").attr("href"));
-    rental.setPrice(getPrice(element));
-    rental.setType(getRowText(element, "soortobject"));
-    String roomCount = getRowText(element, "slaapkamers");
-    rental.setRoomCount(roomCount.isEmpty() ? 0 : Integer.parseInt(roomCount));
-    Instant now = Instant.now();
-    String availableDateText = getRowText(element, "beschikbaarper");
-    if (availableDateText.isEmpty() || availableDateText.contains("in overleg")) {
-      rental.setAvailableDate(null);
-    } else if (availableDateText.contains("per direct")) {
-      rental.setAvailableDate(now.truncatedTo(ChronoUnit.DAYS));
-    } else {
-      rental.setAvailableDate(Instant.from(dateTimeFormatter.parse(availableDateText)));
+    rental.setUrl(
+        actysUrl.substring(0, actysUrl.length() - 1) + element.select("div.adres a").attr("href"));
+    try {
+      rental.setPrice(getPrice(element));
+      rental.setType(getRowText(element, "soortobject"));
+      String roomCount = getRowText(element, "slaapkamers");
+      rental.setRoomCount(roomCount.isEmpty() ? 0 : Integer.parseInt(roomCount));
+      Instant now = Instant.now();
+      String availableDateText = getRowText(element, "beschikbaarper");
+      if (availableDateText.isEmpty() || availableDateText.contains("in overleg")) {
+        rental.setAvailableDate(null);
+      } else if (availableDateText.contains("per direct")) {
+        rental.setAvailableDate(now.truncatedTo(ChronoUnit.DAYS));
+      } else {
+        rental.setAvailableDate(Instant.from(dateTimeFormatter.parse(availableDateText)));
+      }
+      rental.setInsertionDate(now);
+      rental.setLastUpdatedDate(now);
+      rental.setAddress(element.select("div.adres a span.straat").text());
+      fillOtherDetails(rental);
+    } catch (Exception e) {
+      logger.error("Error while scraping details {}", rental.getUrl(), e);
     }
-    rental.setInsertionDate(now);
-    rental.setLastUpdatedDate(now);
-    rental.setAddress(element.select("div.adres a span.straat").text());
-    fillOtherDetails(rental);
     return rental;
   }
 
@@ -108,17 +128,36 @@ public class ActysCrawler {
 
   private void fillOtherDetails(Rental rental) {
     Document document = JsoupWrapperWithProxy.getDocument(actysUrl + rental.getUrl());
-    String status = document.select("div.container.gegevens .kenmerk span").get(0).text();
-    if (status.equals("Nieuw!")) {
-      rental.setStatus(Status.AVAILABLE);
-    } else if (status.equals("Onder optie")) {
-      rental.setStatus(Status.UNDER_OPTION);
-    } else if (status.equals("Verhuurd")) {
-      rental.setStatus(Status.DELETED);
-    }
+    rental.setStatus(getStatus(document, rental));
+    rental.setArea(getArea(document));
+  }
 
-    String areaText = document.select("tr#Main_Woonopp .Text").get(0).text();
-    int area = Integer.parseInt(areaText.split(" ")[0]);
-    rental.setArea(area);
+  private int getArea(Document document) {
+    Elements areaElement = document.select("tr#Main_Woonopp .Text");
+    if (areaElement.isEmpty()) {
+      return 0;
+    }
+    String areaText = areaElement.get(0).text();
+    return Integer.parseInt(areaText.split(" ")[0]);
+  }
+
+  private Status getStatus(Document document, Rental rental) {
+    Elements select = document.select("div.container.gegevens .kenmerk span");
+    Status status = Status.AVAILABLE;
+    if (!select.isEmpty()) {
+      String statusText = select.get(0).text();
+      if (statusText.equals("Nieuw!") || statusText.equals("Beschikbaar")) {
+        status = Status.AVAILABLE;
+      } else if (statusText.equals("Onder optie")) {
+        status = Status.UNDER_OPTION;
+      } else if (statusText.equals("Verhuurd")) {
+        status = Status.DELETED;
+      } else {
+        logger.warn("Unknown status {} for {}", statusText, rental.getUrl());
+      }
+    } else {
+      logger.warn("No status found for {}", rental.getUrl());
+    }
+    return status;
   }
 }

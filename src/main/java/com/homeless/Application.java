@@ -4,8 +4,8 @@ import com.homeless.actys.ActysNewRentalFinder;
 import com.homeless.config.Configuration;
 import com.homeless.notification.EmailNotifier;
 import com.homeless.notification.NotificationController;
-
 import java.util.Timer;
+import java.util.concurrent.TimeUnit;
 
 public class Application {
 
@@ -30,6 +30,6 @@ public class Application {
     Timer t = new Timer();
     ActysNewRentalFinder crawler =
         new ActysNewRentalFinder(daoFactory.getRentalsDao(), notificationController);
-    t.scheduleAtFixedRate(crawler, 0, 5 * 60 * 1000);
+    t.scheduleAtFixedRate(crawler, 0, TimeUnit.MILLISECONDS.convert(15, TimeUnit.MINUTES));
   }
 }

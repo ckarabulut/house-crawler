@@ -1,15 +1,14 @@
 package com.homeless.recipients;
 
 import com.google.gson.Gson;
-import org.jdbi.v3.core.generic.GenericType;
-import org.jdbi.v3.core.mapper.RowMapper;
-import org.jdbi.v3.core.statement.StatementContext;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import org.jdbi.v3.core.generic.GenericType;
+import org.jdbi.v3.core.mapper.RowMapper;
+import org.jdbi.v3.core.statement.StatementContext;
 
 public class RecipientMapper implements RowMapper<Recipient> {
 
