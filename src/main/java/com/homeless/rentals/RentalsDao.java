@@ -21,7 +21,7 @@ public interface RentalsDao {
           + " ("
           + "    id MEDIUMINT NOT NULL AUTO_INCREMENT,"
           + "    address VARCHAR(1000) NOT NULL,"
-          + "    status ENUM('DELETED', 'UPDATED', 'ACTIVE') NOT NULL,"
+          + "    status ENUM('DELETED', 'UNDER_OPTION', 'AVAILABLE') NOT NULL,"
           + "    price DECIMAL(5) NOT NULL,"
           + "    type VARCHAR(100) NOT NULL,"
           + "    area DECIMAL(3) NOT NULL,"
@@ -34,8 +34,8 @@ public interface RentalsDao {
           + " )")
   void createRentalsTable();
 
-  @SqlQuery("SELECT * FROM homeless.rentals WHERE status = :status")
-  List<Rental> findByStatus(@Bind("status") Status status);
+  @SqlQuery("SELECT * FROM homeless.rentals")
+  List<Rental> findAll();
 
   @SqlUpdate(
       "INSERT INTO homeless.rentals "

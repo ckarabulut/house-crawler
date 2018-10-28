@@ -1,6 +1,7 @@
 package com.homeless.rentals.models;
 
 public enum Status {
-  ACTIVE,
+  AVAILABLE,
+  UNDER_OPTION,
   DELETED
 }

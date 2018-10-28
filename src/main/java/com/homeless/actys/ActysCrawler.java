@@ -2,6 +2,7 @@ package com.homeless.actys;
 
 import com.homeless.proxies.JsoupWrapperWithProxy;
 import com.homeless.rentals.models.Rental;
+import com.homeless.rentals.models.Status;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -23,17 +24,20 @@ import java.util.stream.Collectors;
 
 public class ActysCrawler {
 
-  private final String url = "https://ikwilhuren.nu/huurwoningen/pagina/";
+  private final String actysUrl = "https://ikwilhuren.nu/";
+  private final String rentalListUrl = actysUrl + "huurwoningen/pagina/";
   private final DateTimeFormatter dateTimeFormatter;
+  private final Locale dutchLocale;
 
   public ActysCrawler() {
+    dutchLocale = new Locale("nl", "NL");
     this.dateTimeFormatter =
         new DateTimeFormatterBuilder()
             .parseCaseInsensitive()
             .appendPattern("d MMMM yyyy")
             .parseDefaulting(ChronoField.NANO_OF_DAY, 0)
             .toFormatter()
-            .withLocale(new Locale("nl", "NL"))
+            .withLocale(dutchLocale)
             .withZone(ZoneId.of("Europe/Amsterdam"));
   }
 
@@ -41,7 +45,7 @@ public class ActysCrawler {
     Set<Element> elementSet = Collections.newSetFromMap(new ConcurrentHashMap<>());
     Element lastElement = null;
     for (int i = 1; true; i++) {
-      Document doc = JsoupWrapperWithProxy.getDocument(url + i);
+      Document doc = JsoupWrapperWithProxy.getDocument(rentalListUrl + i);
       Elements elements = doc.select(".woning .row .info");
       if (elements.isEmpty()) {
         break;
@@ -54,19 +58,19 @@ public class ActysCrawler {
       elementSet.addAll(elements);
     }
 
-    return elementSet.stream().map(this::createRental).collect(Collectors.toList());
+    return elementSet.parallelStream().map(this::createRental).collect(Collectors.toList());
   }
 
   private Rental createRental(Element element) {
     Rental rental = new Rental();
     rental.setUrl(element.select("div.adres a").attr("href"));
     rental.setPrice(getPrice(element));
-    rental.setType(getDetailText(element, "soortobject"));
-    String roomCount = getDetailText(element, "slaapkamers");
-    rental.setRoomCount(roomCount == null ? 0 : Integer.parseInt(roomCount));
+    rental.setType(getRowText(element, "soortobject"));
+    String roomCount = getRowText(element, "slaapkamers");
+    rental.setRoomCount(roomCount.isEmpty() ? 0 : Integer.parseInt(roomCount));
     Instant now = Instant.now();
-    String availableDateText = getDetailText(element, "beschikbaarper");
-    if (availableDateText == null || availableDateText.contains("in overleg")) {
+    String availableDateText = getRowText(element, "beschikbaarper");
+    if (availableDateText.isEmpty() || availableDateText.contains("in overleg")) {
       rental.setAvailableDate(null);
     } else if (availableDateText.contains("per direct")) {
       rental.setAvailableDate(now.truncatedTo(ChronoUnit.DAYS));
@@ -76,28 +80,45 @@ public class ActysCrawler {
     rental.setInsertionDate(now);
     rental.setLastUpdatedDate(now);
     rental.setAddress(element.select("div.adres a span.straat").text());
+    fillOtherDetails(rental);
     return rental;
   }
 
-  private String getDetailText(Element element, String s) {
+  private String getRowText(Element element, String s) {
     Elements elements = element.select(String.format("div.details.row .%s span", s));
     if (elements.size() < 2) {
-      return null;
+      return "";
     }
     return elements.get(1).text();
   }
 
   private int getPrice(Element element) {
-    NumberFormat formatter = NumberFormat.getNumberInstance(Locale.GERMAN);
+    NumberFormat formatter = NumberFormat.getNumberInstance(dutchLocale);
     Number parse;
     String priceString = "";
     try {
-      priceString = getDetailText(element, "huurprijs").replaceAll("[^0-9.,-]", "");
+      priceString = getRowText(element, "huurprijs").replaceAll("[^0-9.,-]", "");
 
       parse = formatter.parse(priceString);
     } catch (ParseException e) {
       throw new RuntimeException(String.format("Number %s can not be parsed", priceString));
     }
     return parse.intValue();
+  }
+
+  private void fillOtherDetails(Rental rental) {
+    Document document = JsoupWrapperWithProxy.getDocument(actysUrl + rental.getUrl());
+    String status = document.select("div.container.gegevens .kenmerk span").get(0).text();
+    if (status.equals("Nieuw!")) {
+      rental.setStatus(Status.AVAILABLE);
+    } else if (status.equals("Onder optie")) {
+      rental.setStatus(Status.UNDER_OPTION);
+    } else if (status.equals("Verhuurd")) {
+      rental.setStatus(Status.DELETED);
+    }
+
+    String areaText = document.select("tr#Main_Woonopp .Text").get(0).text();
+    int area = Integer.parseInt(areaText.split(" ")[0]);
+    rental.setArea(area);
   }
 }

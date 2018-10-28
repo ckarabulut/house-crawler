@@ -8,6 +8,7 @@ import com.homeless.rentals.models.Status;
 import java.util.List;
 import java.util.Map;
 import java.util.TimerTask;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -57,29 +58,37 @@ public class ActysNewRentalFinder extends TimerTask {
 
   private void doRun() {
     List<Rental> crawledRentals = actysCrawler.getAllRentals();
-    Map<String, Rental> crawledRentalNameMap =
-        crawledRentals.stream().collect(Collectors.toMap(Rental::getUrl, t -> t));
-
-    List<Rental> savedRentals = rentalsDao.findByStatus(Status.ACTIVE);
+    List<Rental> savedRentals = rentalsDao.findAll();
     Map<String, Rental> savedRentalNameMap =
-        savedRentals.stream().collect(Collectors.toMap(Rental::getUrl, rental -> rental));
+        new ConcurrentHashMap<>(
+            savedRentals.stream().collect(Collectors.toMap(Rental::getUrl, rental -> rental)));
 
     List<Rental> newRentals =
-        crawledRentalNameMap
-            .keySet()
+        crawledRentals
             .stream()
-            .filter(url -> !savedRentalNameMap.keySet().contains(url))
-            .map(crawledRentalNameMap::get)
-            .peek(rental -> rental.setStatus(Status.ACTIVE))
+            .filter(
+                newRental -> {
+                  String url = newRental.getUrl();
+                  Rental rental = savedRentalNameMap.get(url);
+                  if (rental == null) {
+                    rentalsDao.insertRental(newRental);
+                    return newRental.getStatus() == Status.AVAILABLE;
+                  }
+                  savedRentalNameMap.remove(url);
+                  if (rental.getStatus() == newRental.getStatus()) {
+                    return false;
+                  }
+                  newRental.setId(rental.getId());
+                  rentalsDao.updateRental(newRental);
+                  return newRental.getStatus() == Status.AVAILABLE;
+                })
             .collect(Collectors.toList());
-
-    newRentals.forEach(rentalsDao::insertRental);
 
     savedRentalNameMap
         .keySet()
         .stream()
-        .filter(url -> !crawledRentalNameMap.keySet().contains(url))
         .map(savedRentalNameMap::get)
+        .filter(rental -> rental.getStatus() != Status.DELETED)
         .peek(rental -> rental.setStatus(Status.DELETED))
         .forEach(rentalsDao::updateRental);
 
