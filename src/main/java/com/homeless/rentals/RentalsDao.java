@@ -14,20 +14,22 @@ public interface RentalsDao {
   void createDatabase();
 
   @SqlUpdate(
-      "CREATE TABLE IF NOT EXISTS homeless.rentals"
+      ""
+          + " CREATE TABLE IF NOT EXISTS homeless.rentals"
           + " ("
           + "    id MEDIUMINT NOT NULL AUTO_INCREMENT,"
-          + "    address VARCHAR(1000) NOT NULL,"
+          + "    url VARCHAR(1000) NOT NULL,"
           + "    status ENUM('DELETED', 'UNDER_OPTION', 'AVAILABLE') NOT NULL,"
+          + "    address VARCHAR(1000) NOT NULL,"
           + "    price DECIMAL(5) NOT NULL,"
           + "    type VARCHAR(100) NOT NULL,"
           + "    area DECIMAL(3) NOT NULL,"
           + "    roomCount DECIMAL(1) NOT NULL,"
           + "    availableDate TIMESTAMP,"
-          + "    insertionDate TIMESTAMP,"
-          + "    lastUpdatedDate TIMESTAMP,"
-          + "    url VARCHAR(1000) NOT NULL,"
-          + "    PRIMARY KEY(id)"
+          + "    createdOn TIMESTAMP,"
+          + "    updatedOn TIMESTAMP,"
+          + "    PRIMARY KEY(id),"
+          + "    UNIQUE KEY unique_url (url)"
           + " )")
   void createRentalsTable();
 
@@ -35,22 +37,24 @@ public interface RentalsDao {
   List<Rental> findAll();
 
   @SqlUpdate(
-      "INSERT INTO homeless.rentals "
-          + " VALUES(:id, :address, :status, :price, :type, :area, :roomCount, :availableDate, :insertionDate, :lastUpdatedDate, :url)")
+      ""
+          + " INSERT INTO homeless.rentals "
+          + " VALUES(:id, :url, :status, :address, :price, :type, :area, :roomCount, :availableDate, now(), now())")
   void insertRental(@BindBean Rental rental);
 
   @SqlUpdate(
-      "UPDATE homeless.rentals SET"
-          + " status= :status,"
-          + " price= :price,"
-          + " status= :status,"
-          + " type= :type,"
-          + " area= :area,"
-          + " roomCount= :roomCount,"
-          + " availableDate= :availableDate,"
-          + " insertionDate= :insertionDate,"
-          + " lastUpdatedDate= :lastUpdatedDate,"
-          + " url= :url"
+      ""
+          + " UPDATE homeless.rentals"
+          + " SET"
+          + "  status= :status,"
+          + "  address= :address,"
+          + "  price= :price,"
+          + "  type= :type,"
+          + "  area= :area,"
+          + "  roomCount= :roomCount,"
+          + "  availableDate= :availableDate,"
+          + "  updatedOn= now(),"
+          + "  url= :url"
           + " WHERE id= :id")
   void updateRental(@BindBean Rental rental);
 }

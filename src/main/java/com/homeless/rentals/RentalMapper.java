@@ -13,19 +13,19 @@ public class RentalMapper implements RowMapper<Rental> {
 
   @Override
   public Rental map(ResultSet r, StatementContext ctx) throws SQLException {
-    Rental rental = new Rental();
-    rental.setId(r.getInt("id"));
-    rental.setStatus(Status.valueOf(r.getString("status")));
-    rental.setPrice(r.getInt("price"));
-    rental.setType(r.getString("type"));
-    rental.setArea(r.getInt("area"));
-    rental.setRoomCount(r.getInt("roomCount"));
-    rental.setAvailableDate(getNullableDate(r, "availableDate"));
-    rental.setInsertionDate(getNullableDate(r, "insertionDate"));
-    rental.setLastUpdatedDate(getNullableDate(r, "lastUpdatedDate"));
-    rental.setAddress(r.getString("address"));
-    rental.setUrl(r.getString("url"));
-    return rental;
+    return Rental.builder()
+        .id(r.getInt("id"))
+        .status(Status.valueOf(r.getString("status")))
+        .price(r.getInt("price"))
+        .type(r.getString("type"))
+        .area(r.getInt("area"))
+        .roomCount(r.getInt("roomCount"))
+        .availableDate(getNullableDate(r, "availableDate"))
+        .createdOn(getNullableDate(r, "createdOn"))
+        .updatedOn(getNullableDate(r, "updatedOn"))
+        .url(r.getString("url"))
+        .address(r.getString("address"))
+        .build();
   }
 
   private Instant getNullableDate(ResultSet r, String fieldName) throws SQLException {

@@ -77,10 +77,12 @@ public class ActysCrawler {
   }
 
   private Rental createRental(Element element) {
-    Rental rental = new Rental();
+    Rental rental = Rental.builder().build();
     rental.setUrl(
-        actysUrl.substring(0, actysUrl.length() - 1) + element.select("div.adres a").attr("href"));
+        actysUrl.substring(0, actysUrl.length() - 1)
+            + element.select("div.adres a").attr("href").toLowerCase());
     try {
+      rental.setAddress(element.select("div.adres a span.straat").text());
       rental.setPrice(getPrice(element));
       rental.setType(getRowText(element, "soortobject"));
       String roomCount = getRowText(element, "slaapkamers");
@@ -94,9 +96,6 @@ public class ActysCrawler {
       } else {
         rental.setAvailableDate(Instant.from(dateTimeFormatter.parse(availableDateText)));
       }
-      rental.setInsertionDate(now);
-      rental.setLastUpdatedDate(now);
-      rental.setAddress(element.select("div.adres a span.straat").text());
       fillOtherDetails(rental);
     } catch (Exception e) {
       logger.error("Error while scraping details {}", rental.getUrl(), e);
@@ -127,7 +126,7 @@ public class ActysCrawler {
   }
 
   private void fillOtherDetails(Rental rental) {
-    Document document = JsoupWrapperWithProxy.getDocument(actysUrl + rental.getUrl());
+    Document document = JsoupWrapperWithProxy.getDocument(rental.getUrl());
     rental.setStatus(getStatus(document, rental));
     rental.setArea(getArea(document));
   }
@@ -146,14 +145,19 @@ public class ActysCrawler {
     Status status = Status.AVAILABLE;
     if (!select.isEmpty()) {
       String statusText = select.get(0).text();
-      if (statusText.equals("Nieuw!") || statusText.equals("Beschikbaar")) {
-        status = Status.AVAILABLE;
-      } else if (statusText.equals("Onder optie")) {
-        status = Status.UNDER_OPTION;
-      } else if (statusText.equals("Verhuurd")) {
-        status = Status.DELETED;
-      } else {
-        logger.warn("Unknown status {} for {}", statusText, rental.getUrl());
+      switch (statusText) {
+        case "Nieuw!":
+        case "Beschikbaar":
+          break;
+        case "Onder optie":
+          status = Status.UNDER_OPTION;
+          break;
+        case "Verhuurd":
+          status = Status.DELETED;
+          break;
+        default:
+          logger.warn("Unknown status {} for {}", statusText, rental.getUrl());
+          break;
       }
     } else {
       logger.warn("No status found for {}", rental.getUrl());

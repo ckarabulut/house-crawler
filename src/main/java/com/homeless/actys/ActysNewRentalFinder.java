@@ -7,7 +7,6 @@ import com.homeless.rentals.models.Status;
 import java.util.List;
 import java.util.Map;
 import java.util.TimerTask;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -59,34 +58,34 @@ public class ActysNewRentalFinder extends TimerTask {
     List<Rental> crawledRentals = actysCrawler.getAllRentals();
     List<Rental> savedRentals = rentalsDao.findAll();
     Map<String, Rental> savedRentalNameMap =
-        new ConcurrentHashMap<>(
-            savedRentals.stream().collect(Collectors.toMap(Rental::getUrl, rental -> rental)));
+        savedRentals
+            .stream()
+            .collect(Collectors.toMap(rental -> rental.getUrl().toLowerCase(), rental -> rental));
 
     List<Rental> newRentals =
         crawledRentals
             .stream()
             .filter(
                 newRental -> {
-                  String url = newRental.getUrl();
+                  String url = newRental.getUrl().toLowerCase();
                   Rental rental = savedRentalNameMap.get(url);
                   if (rental == null) {
                     rentalsDao.insertRental(newRental);
                     return newRental.getStatus() == Status.AVAILABLE;
                   }
                   savedRentalNameMap.remove(url);
+                  newRental.setId(rental.getId());
+                  rentalsDao.updateRental(newRental);
                   if (rental.getStatus() == newRental.getStatus()) {
                     return false;
                   }
-                  newRental.setId(rental.getId());
-                  rentalsDao.updateRental(newRental);
                   return newRental.getStatus() == Status.AVAILABLE;
                 })
             .collect(Collectors.toList());
 
     savedRentalNameMap
-        .keySet()
+        .values()
         .stream()
-        .map(savedRentalNameMap::get)
         .filter(rental -> rental.getStatus() != Status.DELETED)
         .peek(rental -> rental.setStatus(Status.DELETED))
         .forEach(rentalsDao::updateRental);
