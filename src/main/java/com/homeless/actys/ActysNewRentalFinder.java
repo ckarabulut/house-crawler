@@ -6,12 +6,11 @@ import com.homeless.rentals.models.Rental;
 import com.homeless.rentals.models.Status;
 import java.util.List;
 import java.util.Map;
-import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-public class ActysNewRentalFinder extends TimerTask {
+public class ActysNewRentalFinder implements Runnable {
   private static Logger logger = Logger.getLogger(ActysNewRentalFinder.class.getName());
 
   private final RentalsDao rentalsDao;

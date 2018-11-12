@@ -97,10 +97,11 @@ public class ActysCrawler {
         rental.setAvailableDate(Instant.from(dateTimeFormatter.parse(availableDateText)));
       }
       fillOtherDetails(rental);
+      return rental;
     } catch (Exception e) {
       logger.error("Error while scraping details {}", rental.getUrl(), e);
+      return null;
     }
-    return rental;
   }
 
   private String getRowText(Element element, String s) {
