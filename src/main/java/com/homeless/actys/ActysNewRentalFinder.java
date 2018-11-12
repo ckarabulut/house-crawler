@@ -6,12 +6,12 @@ import com.homeless.rentals.models.Rental;
 import com.homeless.rentals.models.Status;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ActysNewRentalFinder implements Runnable {
-  private static Logger logger = Logger.getLogger(ActysNewRentalFinder.class.getName());
+  private static Logger logger = LoggerFactory.getLogger(ActysNewRentalFinder.class.getName());
 
   private final RentalsDao rentalsDao;
   private final ActysCrawler actysCrawler;
@@ -37,18 +37,13 @@ public class ActysNewRentalFinder implements Runnable {
   public void run() {
     long s = System.currentTimeMillis();
     try {
-      logger.log(Level.INFO, "Crawling has started.");
+      logger.info("Crawling has started.");
       doRun();
-      logger.log(
-          Level.INFO,
-          String.format(
-              "Crawling has ended in %d seconds", (System.currentTimeMillis() - s) / 1000));
+      logger.info("Crawling has ended in {} seconds", (System.currentTimeMillis() - s) / 1000);
     } catch (RuntimeException e) {
-      logger.log(
-          Level.SEVERE,
-          String.format(
-              "Crawling has ended with an error in %d seconds.",
-              (System.currentTimeMillis() - s) / 1000),
+      logger.error(
+          "Crawling has ended with an error in {} seconds.",
+          (System.currentTimeMillis() - s) / 1000,
           e);
     }
   }

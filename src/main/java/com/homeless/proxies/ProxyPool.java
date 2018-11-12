@@ -5,25 +5,28 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ProxyPool {
 
-  private static Logger logger = Logger.getLogger(ProxyPool.class.getName());
-  private AtomicInteger counter;
+  private static Logger logger = LoggerFactory.getLogger(ProxyPool.class.getName());
+  private final Random rand;
   private List<Proxy> proxies;
+  private List<Proxy> highPerformingProxies;
 
   public ProxyPool() {
+    this.rand = new Random();
+    this.highPerformingProxies = Collections.synchronizedList(new ArrayList<>());
     this.proxies = loadProxies();
     ExecutorService executorService = Executors.newFixedThreadPool(1);
     executorService.submit(
@@ -35,13 +38,13 @@ public class ProxyPool {
                 } catch (InterruptedException e) {
                   throw new RuntimeException(e);
                 }
-                proxies = loadProxies();
+                this.proxies = loadProxies();
+                this.highPerformingProxies = Collections.synchronizedList(new ArrayList<>());
               }
             });
   }
 
   private List<Proxy> loadProxies() {
-    counter = new AtomicInteger();
     Document document;
     try {
       document = Jsoup.parse(new URL("https://free-proxy-list.net/"), 60000);
@@ -72,17 +75,30 @@ public class ProxyPool {
     return Collections.synchronizedList(new ArrayList<>(proxySet));
   }
 
-  public Proxy getNextProxy() {
+  public Proxy getNextProxy(boolean highPriority) {
+    if ((highPriority && !highPerformingProxies.isEmpty())
+        || (highPerformingProxies.size() > 20)
+        || (highPerformingProxies.size() > 5 && rand.nextBoolean())
+        || (highPerformingProxies.size() > 0 && rand.nextBoolean() && rand.nextBoolean())) {
+      return highPerformingProxies.get(rand.nextInt(highPerformingProxies.size()));
+    }
     if (proxies.isEmpty()) {
       throw new RuntimeException("No proxy is found!!");
     }
-    Proxy proxy = proxies.get(counter.getAndIncrement() % proxies.size());
+    return proxies.get(rand.nextInt(proxies.size()));
+  }
+
+  public void increaseReliability(Proxy proxy) {
+    highPerformingProxies.add(proxy);
+    proxies.remove(proxy);
+  }
+
+  public void reduceReliability(Proxy proxy) {
+    highPerformingProxies.remove(proxy);
+    proxy.reduceReliability();
     if (!proxy.isReliable()) {
-      logger.log(
-          Level.WARNING, String.format("Proxy is not reliable anymore, removing!\n%s.", proxy));
+      logger.info("Proxy is not reliable anymore, removing! {}.", proxy);
       proxies.remove(proxy);
-      return getNextProxy();
     }
-    return proxy;
   }
 }

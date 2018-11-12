@@ -18,7 +18,6 @@ import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -47,11 +46,10 @@ public class ActysCrawler {
 
   public List<Rental> getAllRentals() {
     List<Rental> rentals = Collections.synchronizedList(new LinkedList<>());
-    System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism", "40");
-    ExecutorService executorService = Executors.newFixedThreadPool(20);
+    ExecutorService executorService = Executors.newCachedThreadPool();
     Element lastElement = null;
     for (int i = 1; true; i++) {
-      Document doc = JsoupWrapperWithProxy.getDocument(rentalListUrl + i);
+      Document doc = JsoupWrapperWithProxy.getDocument(rentalListUrl + i, true);
       Elements elements = doc.select(".woning .row .info");
       if (elements.isEmpty()) {
         break;
@@ -61,11 +59,12 @@ public class ActysCrawler {
         break;
       }
       lastElement = elements.get(elements.size() - 1);
-      executorService.submit(
-          () -> {
-            rentals.addAll(
-                elements.parallelStream().map(this::createRental).collect(Collectors.toList()));
-          });
+      elements.forEach(
+          t ->
+              executorService.submit(
+                  () -> {
+                    rentals.add(createRental(t));
+                  }));
     }
     executorService.shutdown();
     try {
@@ -127,7 +126,7 @@ public class ActysCrawler {
   }
 
   private void fillOtherDetails(Rental rental) {
-    Document document = JsoupWrapperWithProxy.getDocument(rental.getUrl());
+    Document document = JsoupWrapperWithProxy.getDocument(rental.getUrl(), false);
     rental.setStatus(getStatus(document, rental));
     rental.setArea(getArea(document));
   }
