@@ -1,8 +1,5 @@
 package com.homeless.actys;
 
-import com.homeless.proxies.JsoupWrapperWithProxy;
-import com.homeless.rentals.models.Rental;
-import com.homeless.rentals.models.Status;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.time.Instant;
@@ -18,6 +15,10 @@ import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+
+import com.homeless.proxies.JsoupWrapperWithProxy;
+import com.homeless.rentals.models.Rental;
+import com.homeless.rentals.models.Status;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -114,13 +115,12 @@ public class ActysCrawler {
   private int getPrice(Element element) {
     NumberFormat formatter = NumberFormat.getNumberInstance(dutchLocale);
     Number parse;
-    String priceString = "";
+    String priceString;
     try {
       priceString = getRowText(element, "huurprijs").replaceAll("[^0-9.,-]", "");
-
       parse = formatter.parse(priceString);
     } catch (ParseException e) {
-      throw new RuntimeException(String.format("Number %s can not be parsed", priceString));
+      return 0;
     }
     return parse.intValue();
   }
@@ -148,6 +148,7 @@ public class ActysCrawler {
       switch (statusText) {
         case "Nieuw!":
         case "Beschikbaar":
+        case "Open huis":
           break;
         case "Onder optie":
           status = Status.UNDER_OPTION;

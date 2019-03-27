@@ -6,6 +6,7 @@ import com.homeless.rentals.models.Rental;
 import com.homeless.rentals.models.Status;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,6 +60,7 @@ public class ActysNewRentalFinder implements Runnable {
     List<Rental> newRentals =
         crawledRentals
             .stream()
+            .filter(Objects::nonNull)
             .filter(
                 newRental -> {
                   String url = newRental.getUrl().toLowerCase();
