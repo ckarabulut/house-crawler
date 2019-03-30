@@ -20,6 +20,7 @@ public class RentalMapper implements RowMapper<Rental> {
         .type(r.getString("type"))
         .area(r.getInt("area"))
         .roomCount(r.getInt("roomCount"))
+        .floor(r.getInt("floor"))
         .availableDate(getNullableDate(r, "availableDate"))
         .createdOn(getNullableDate(r, "createdOn"))
         .updatedOn(getNullableDate(r, "updatedOn"))

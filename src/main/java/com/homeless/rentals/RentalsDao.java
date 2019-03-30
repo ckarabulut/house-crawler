@@ -25,6 +25,7 @@ public interface RentalsDao {
           + "    type VARCHAR(100) NOT NULL,"
           + "    area DECIMAL(3) NOT NULL,"
           + "    roomCount DECIMAL(1) NOT NULL,"
+          + "    floor DECIMAL(2) NOT NULL,"
           + "    availableDate TIMESTAMP,"
           + "    createdOn TIMESTAMP,"
           + "    updatedOn TIMESTAMP,"
@@ -39,7 +40,7 @@ public interface RentalsDao {
   @SqlUpdate(
       ""
           + " INSERT INTO homeless.rentals "
-          + " VALUES(:id, :url, :status, :address, :price, :type, :area, :roomCount, :availableDate, now(), now())")
+          + " VALUES(:id, :url, :status, :address, :price, :type, :area, :roomCount, :floor, :availableDate, now(), now())")
   void insertRental(@BindBean Rental rental);
 
   @SqlUpdate(
@@ -52,6 +53,7 @@ public interface RentalsDao {
           + "  type= :type,"
           + "  area= :area,"
           + "  roomCount= :roomCount,"
+          + "  floor= :floor,"
           + "  availableDate= :availableDate,"
           + "  updatedOn= now(),"
           + "  url= :url"

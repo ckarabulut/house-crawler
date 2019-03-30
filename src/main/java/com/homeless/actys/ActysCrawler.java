@@ -85,8 +85,7 @@ public class ActysCrawler {
       rental.setAddress(element.select("div.adres a span.straat").text());
       rental.setPrice(getPrice(element));
       rental.setType(getRowText(element, "soortobject"));
-      String roomCount = getRowText(element, "slaapkamers");
-      rental.setRoomCount(roomCount.isEmpty() ? 0 : Integer.parseInt(roomCount));
+      rental.setRoomCount(getRoomCount(element));
       Instant now = Instant.now();
       String availableDateText = getRowText(element, "beschikbaarper");
       if (availableDateText.isEmpty() || availableDateText.contains("in overleg")) {
@@ -102,6 +101,11 @@ public class ActysCrawler {
       logger.error("Error while scraping details {}", rental.getUrl(), e);
       return null;
     }
+  }
+
+  private int getRoomCount(Element element) {
+    String roomCount = getRowText(element, "slaapkamers");
+    return roomCount.isEmpty() ? 0 : Integer.parseInt(roomCount);
   }
 
   private String getRowText(Element element, String s) {
@@ -129,6 +133,7 @@ public class ActysCrawler {
     Document document = JsoupWrapperWithProxy.getDocument(rental.getUrl(), false);
     rental.setStatus(getStatus(document, rental));
     rental.setArea(getArea(document));
+    rental.setFloor(getFloor(document));
   }
 
   private int getArea(Document document) {
@@ -138,6 +143,15 @@ public class ActysCrawler {
     }
     String areaText = areaElement.get(0).text();
     return Integer.parseInt(areaText.split(" ")[0]);
+  }
+
+  private int getFloor(Document document) {
+    Elements areaElement = document.select("tr#Main_Woonlaag .Text");
+    if (areaElement.isEmpty()) {
+      return 0;
+    }
+    String areaText = areaElement.get(0).text();
+    return Integer.parseInt(areaText);
   }
 
   private Status getStatus(Document document, Rental rental) {

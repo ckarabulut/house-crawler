@@ -14,6 +14,7 @@ public class Rental {
   private String type;
   private int area;
   private int roomCount;
+  private int floor;
   private Instant availableDate;
   private Instant createdOn;
   private Instant updatedOn;
