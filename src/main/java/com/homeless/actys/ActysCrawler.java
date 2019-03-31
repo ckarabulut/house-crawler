@@ -138,6 +138,8 @@ public class ActysCrawler {
     rental.setStatus(getStatus(document, rental));
     rental.setArea(getArea(document));
     rental.setFloor(getFloor(document));
+      rental.setServiceFee(getServiceFee(document));
+      rental.setTotalCost(rental.getPrice() + rental.getServiceFee());
   }
 
   private int getArea(Document document) {
@@ -157,6 +159,15 @@ public class ActysCrawler {
     String areaText = areaElement.get(0).text();
     return Integer.parseInt(areaText);
   }
+
+    private int getServiceFee(Document document) {
+        Elements areaElement = document.select("tr#Main_Servicekosten .Text");
+        if (areaElement.isEmpty()) {
+            return 0;
+        }
+        String areaText = areaElement.get(0).text();
+        return Integer.parseInt(areaText.split(" ")[1]);
+    }
 
   private Status getStatus(Document document, Rental rental) {
     Elements select = document.select("div.container.gegevens .kenmerk span");

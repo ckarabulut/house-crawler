@@ -14,24 +14,26 @@ public interface RentalsDao {
   void createDatabase();
 
   @SqlUpdate(
-      ""
-          + " CREATE TABLE IF NOT EXISTS homeless.rentals"
-          + " ("
-          + "    id MEDIUMINT NOT NULL AUTO_INCREMENT,"
-          + "    url VARCHAR(1000) NOT NULL,"
-          + "    status ENUM('DELETED', 'UNDER_OPTION', 'AVAILABLE') NOT NULL,"
-          + "    address VARCHAR(1000) NOT NULL,"
-          + "    price DECIMAL(5) NOT NULL,"
-          + "    type VARCHAR(100) NOT NULL,"
-          + "    area DECIMAL(3) NOT NULL,"
-          + "    roomCount DECIMAL(1) NOT NULL,"
-          + "    floor DECIMAL(2) NOT NULL,"
-          + "    availableDate TIMESTAMP,"
-          + "    createdOn TIMESTAMP,"
-          + "    updatedOn TIMESTAMP,"
-          + "    PRIMARY KEY(id),"
-          + "    UNIQUE KEY unique_url (url)"
-          + " )")
+          ""
+                  + " CREATE TABLE IF NOT EXISTS homeless.rentals"
+                  + " ("
+                  + "    id MEDIUMINT NOT NULL AUTO_INCREMENT,"
+                  + "    url VARCHAR(1000) NOT NULL,"
+                  + "    status ENUM('DELETED', 'UNDER_OPTION', 'AVAILABLE') NOT NULL,"
+                  + "    address VARCHAR(1000) NOT NULL,"
+                  + "    price DECIMAL(5) NOT NULL,"
+                  + "    type VARCHAR(100) NOT NULL,"
+                  + "    area DECIMAL(3) NOT NULL,"
+                  + "    roomCount DECIMAL(1) NOT NULL,"
+                  + "    floor DECIMAL(2) NOT NULL,"
+                  + "    serviceFee DECIMAL(3) NOT NULL,"
+                  + "    totalCost DECIMAL(5) NOT NULL,"
+                  + "    availableDate TIMESTAMP,"
+                  + "    createdOn TIMESTAMP,"
+                  + "    updatedOn TIMESTAMP,"
+                  + "    PRIMARY KEY(id),"
+                  + "    UNIQUE KEY unique_url (url)"
+                  + " )")
   void createRentalsTable();
 
   @SqlQuery("SELECT * FROM homeless.rentals")
@@ -40,7 +42,7 @@ public interface RentalsDao {
   @SqlUpdate(
       ""
           + " INSERT INTO homeless.rentals "
-          + " VALUES(:id, :url, :status, :address, :price, :type, :area, :roomCount, :floor, :availableDate, now(), now())")
+              + " VALUES(:id, :url, :status, :address, :price, :type, :area, :roomCount, :floor, :serviceFee, :totalCost, :availableDate, now(), now())")
   void insertRental(@BindBean Rental rental);
 
   @SqlUpdate(
@@ -54,6 +56,8 @@ public interface RentalsDao {
           + "  area= :area,"
           + "  roomCount= :roomCount,"
           + "  floor= :floor,"
+              + "  serviceFee= :serviceFee,"
+              + "  totalCost= :totalCost,"
           + "  availableDate= :availableDate,"
           + "  updatedOn= now(),"
           + "  url= :url"

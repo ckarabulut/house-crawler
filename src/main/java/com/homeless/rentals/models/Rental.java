@@ -15,6 +15,8 @@ public class Rental {
   private int area;
   private int roomCount;
   private int floor;
+    private int serviceFee;
+    private int totalCost;
   private Instant availableDate;
   private Instant createdOn;
   private Instant updatedOn;

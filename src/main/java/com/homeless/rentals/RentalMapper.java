@@ -21,6 +21,8 @@ public class RentalMapper implements RowMapper<Rental> {
         .area(r.getInt("area"))
         .roomCount(r.getInt("roomCount"))
         .floor(r.getInt("floor"))
+            .serviceFee(r.getInt("serviceFee"))
+            .totalCost(r.getInt("totalCost"))
         .availableDate(getNullableDate(r, "availableDate"))
         .createdOn(getNullableDate(r, "createdOn"))
         .updatedOn(getNullableDate(r, "updatedOn"))
