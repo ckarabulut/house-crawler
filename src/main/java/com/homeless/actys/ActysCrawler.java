@@ -61,15 +61,11 @@ public class ActysCrawler {
       }
       lastElement = elements.get(elements.size() - 1);
         elements.forEach(
-                t -> {
-                    if (t.select("div.adres a span.plaats").text().contains("Amsterdam")) {
+                t ->
                         executorService.submit(
                                 () -> {
                                     rentals.add(createRental(t));
-                                });
-                    }
-                }
-        );
+                                }));
     }
     executorService.shutdown();
     try {
