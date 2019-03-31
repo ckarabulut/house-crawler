@@ -1,9 +1,6 @@
 package com.homeless.notification;
 
-import com.homeless.filters.ChainFilter;
-import com.homeless.filters.Filter;
-import com.homeless.filters.RangeFilter;
-import com.homeless.filters.UrlFilter;
+import com.homeless.filters.*;
 import com.homeless.recipients.RecipientsDao;
 import com.homeless.rentals.models.Rental;
 import java.util.Arrays;
@@ -17,7 +14,7 @@ public class NotificationController {
   private final RecipientsDao recipientsDao;
 
   public NotificationController(RecipientsDao recipientsDao, EmailNotifier emailNotifier) {
-    this.filter = new ChainFilter(Arrays.asList(new UrlFilter(), new RangeFilter()));
+      this.filter = new ChainFilter(Arrays.asList(new UrlFilter(), new RangeFilter(), new SizeFilter()));
     this.recipientsDao = recipientsDao;
     this.emailNotifier = emailNotifier;
   }
