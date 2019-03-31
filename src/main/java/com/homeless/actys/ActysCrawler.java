@@ -60,12 +60,16 @@ public class ActysCrawler {
         break;
       }
       lastElement = elements.get(elements.size() - 1);
-      elements.forEach(
-          t ->
-              executorService.submit(
-                  () -> {
-                    rentals.add(createRental(t));
-                  }));
+        elements.forEach(
+                t -> {
+                    if (t.select("div.adres a span.plaats").text().contains("Amsterdam")) {
+                        executorService.submit(
+                                () -> {
+                                    rentals.add(createRental(t));
+                                });
+                    }
+                }
+        );
     }
     executorService.shutdown();
     try {
